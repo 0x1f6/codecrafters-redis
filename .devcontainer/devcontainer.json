@@ -1,0 +1,59 @@
+{
+  "name": "CodeCrafters Go",
+  "image": "mcr.microsoft.com/devcontainers/go:1.26-trixie",
+  "features": {
+    // Node LTS (needed for openspec)
+    //"ghcr.io/devcontainers/features/node:1": {
+    //  "version": "lts",
+    //  "nodeGypDependencies": false
+    //},
+    "ghcr.io/devcontainers/features/github-cli:1": {
+      "installDirectlyFromGitHubRelease": true,
+      "version": "latest"
+    },
+    "ghcr.io/devcontainers-extra/features/zsh-plugins:0": {
+      "plugins": "ssh-agent npm",
+      "omzPlugins": "https://github.com/zsh-users/zsh-autosuggestions",
+      "username": "vscode"
+    },
+    "ghcr.io/devcontainers-extra/features/apt-packages:1": {
+      "clean_ppas": true,
+      "preserve_apt_list": true,
+      "packages": "netcat-openbsd,inetutils-ping",
+      "ppas": "ppa:deadsnakes/ppa"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "golang.go",
+        "anthropic.claude-code",
+        "ms-vscode.makefile-tools",
+        "codezombiech.gitignore",
+        "usernamehw.errorlens",
+        "shardulm94.trailing-spaces",
+        "redhat.vscode-yaml",
+        "tamasfe.even-better-toml",
+        "yzhang.markdown-all-in-one",
+        "ms-azuretools.vscode-docker"
+      ],
+      "settings": {
+        "go.toolsManagement.autoUpdate": true,
+        "go.testFlags": ["-v", "-count=1"],
+        "go.coverOnSave": false,
+        "go.coverOnSingleTest": true,
+        "editor.formatOnSave": true,
+        "[go]": {
+            "editor.defaultFormatter": "golang.go",
+            "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit"
+            }
+        },
+        "[go.mod]": {
+            "editor.defaultFormatter": "golang.go"
+        }
+        }
+    }
+  },
+  "postCreateCommand": "bash .devcontainer/setup.sh"
+}
