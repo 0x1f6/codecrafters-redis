@@ -2,13 +2,10 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"net"
 	"os"
 )
-
-// Ensures gofmt doesn't remove the "net" and "os" imports in stage 1 (feel free to remove this!)
-var _ = net.Listen
-var _ = os.Exit
 
 
 func main() {
@@ -27,13 +24,11 @@ func main() {
         conn, err := listener.Accept()
         if err != nil {
             fmt.Println("Error accepting connection: ", err.Error())
-			os.Exit(1)
-            //continue
+            continue
         }
 
         // Handle client connection
-        handleClient(conn)
-		break
+        go handleClient(conn)
     }
 }
 
@@ -48,7 +43,9 @@ func handleClient(conn net.Conn) {
 	for {
 		bytesReceived, err := conn.Read(buf)
 		if err != nil {
-			fmt.Println("Error reading from connection: ", err.Error())
+			if err != io.EOF {
+				fmt.Println("Error reading from connection: ", err.Error())
+			}
 			break
 		}
 
