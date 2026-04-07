@@ -3,9 +3,30 @@ package main
 import (
 	"fmt"
 	"strings"
+	"sync"
 )
 
-func HandleRequest(respRequest RESPValue) ([]byte, error) {
+type Server struct {
+	mu    sync.RWMutex
+	store map[string][]byte
+}
+
+func NewServer() *Server {
+	return &Server{
+		store: make(map[string][]byte),
+	}
+}
+
+type commandHandler func(s *Server, args []RESPBulkString) (RESPValue, error)
+
+var commands = map[string]commandHandler{
+	"PING": (*Server).handleCmdPing,
+	"ECHO": (*Server).handleCmdEcho,
+	"GET":  (*Server).handleCmdGet,
+	"SET":  (*Server).handleCmdSet,
+}
+
+func (s *Server) HandleRequest(respRequest RESPValue) (RESPValue, error) {
 	// "Clients send commands to a Redis server as an array of bulk strings.
 	// The first (and sometimes also the second) bulk string in the array is the command's name.
 	// Subsequent elements of the array are the arguments for the command."
@@ -19,24 +40,37 @@ func HandleRequest(respRequest RESPValue) ([]byte, error) {
 		return nil, fmt.Errorf("Could not parse request as array of bulk strings")
 	}
 
-	command, args := strings.ToLower(bulkStrings[0].String()), bulkStrings[1:]
-
-	switch command {
-	case "ping":
-		return handleCmdPing(args)
-	case "echo":
-		return handleCmdEcho(args)
-	default:
+	command := strings.ToUpper(bulkStrings[0].String())
+	args := bulkStrings[1:]
+	handler, ok := commands[command]
+	if !ok {
 		return nil, fmt.Errorf("unknown command: %s", command)
-
 	}
+	return handler(s, args)
 }
 
-func handleCmdEcho(args []RESPBulkString) ([]byte, error) {
+func (s *Server) handleCmdSet(args []RESPBulkString) (RESPValue, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.store[args[0].String()] = args[1].data
+	return NewRESPSimpleString("OK"), nil
+}
+
+func (s *Server) handleCmdGet(args []RESPBulkString) (RESPValue, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	data, ok := s.store[args[0].String()]
+	if !ok {
+		return NewNullRESPBulkString(), nil
+	}
+	return NewRESPBulkString(data), nil
+}
+
+func (s *Server) handleCmdEcho(args []RESPBulkString) (RESPValue, error) {
 	// ECHO only handles a single arg
-	return args[0].Serialize(), nil
+	return args[0], nil
 }
 
-func handleCmdPing(_ []RESPBulkString) ([]byte, error) {
-	return []byte("+PONG\r\n"), nil
+func (s *Server) handleCmdPing(_ []RESPBulkString) (RESPValue, error) {
+	return NewRESPSimpleString("PONG"), nil
 }

@@ -16,20 +16,20 @@ func ServeForever() {
 
 	defer listener.Close()
 
+	s := NewServer()
+
 	for {
-		// Block until we receive an incoming connection
 		conn, err := listener.Accept()
 		if err != nil {
 			fmt.Println("Error accepting connection: ", err.Error())
 			continue
 		}
 
-		// Handle client connection
-		go handleClient(conn)
+		go s.handleClient(conn)
 	}
 }
 
-func handleClient(conn net.Conn) {
+func (s *Server) handleClient(conn net.Conn) {
 	defer conn.Close()
 
 	reader := bufio.NewReader(conn)
@@ -45,13 +45,13 @@ func handleClient(conn net.Conn) {
 			break
 		}
 
-		response, err := HandleRequest(request)
+		response, err := s.HandleRequest(request)
 		if err != nil {
 			fmt.Println("Error handling request:", err)
 			break
 		}
 
-		_, err = conn.Write(response)
+		_, err = conn.Write(response.Serialize())
 		if err != nil {
 			fmt.Println("Error writing to connection: ", err.Error())
 			break

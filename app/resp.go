@@ -14,6 +14,7 @@ type RESPValue interface {
 }
 
 type RESPArray struct {
+	count    int
 	elements []RESPValue
 }
 
@@ -40,11 +41,17 @@ func (s RESPSimpleString) String() string {
 	return string(s.value)
 }
 
+// Bytes() implementations
+//func (b RESPBulkString) Bytes()
+
 // Serialize() implementations
 func (a RESPArray) Serialize() []byte {
+	if a.count == -1 {
+		return []byte("*-1\r\n")
+	}
 	var buf bytes.Buffer
 	buf.WriteByte('*')
-	buf.WriteString(strconv.Itoa(len(a.elements)))
+	buf.WriteString(strconv.Itoa(a.count))
 	buf.WriteString("\r\n")
 	for _, elem := range a.elements {
 		buf.Write(elem.Serialize())
@@ -200,4 +207,32 @@ func BulkStringsFromArray(respValue RESPValue) ([]RESPBulkString, bool) {
 		bulkStrings = append(bulkStrings, element)
 	}
 	return bulkStrings, true
+}
+
+func NewRESPBulkString(data []byte) RESPBulkString {
+	return RESPBulkString{length: len(data), data: data}
+}
+
+func NewNullRESPBulkString() RESPBulkString {
+	return RESPBulkString{length: -1, data: nil}
+}
+
+func (b RESPBulkString) IsNull() bool {
+	return b.length == -1
+}
+
+func NewRESPSimpleString(value string) RESPSimpleString {
+	return RESPSimpleString{value: value}
+}
+
+func NewRESPArray(elements []RESPValue) RESPArray {
+	return RESPArray{count: len(elements), elements: elements}
+}
+
+func NewNullRESPArray() RESPArray {
+	return RESPArray{count: -1, elements: nil}
+}
+
+func (a RESPArray) IsNull() bool {
+	return a.count == -1
 }
