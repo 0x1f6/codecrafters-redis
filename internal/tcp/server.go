@@ -47,12 +47,15 @@ func (s *Server) ServeForever() error {
 func (s *Server) handleClient(conn net.Conn) {
 	defer conn.Close()
 
+	fmt.Printf("Client(%s) connected\n", conn.RemoteAddr())
+
 	reader := bufio.NewReader(conn)
 
 	for {
 		request, err := resp.Parse(reader)
 		if err != nil {
 			if err == io.EOF {
+				fmt.Printf("Client(%s) disconnected\n", conn.RemoteAddr())
 				return
 			}
 			fmt.Println("Error parsing request:", err)
