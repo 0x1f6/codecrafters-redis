@@ -19,7 +19,7 @@
     "ghcr.io/devcontainers-extra/features/apt-packages:1": {
       "clean_ppas": true,
       "preserve_apt_list": true,
-      "packages": "netcat-openbsd,inetutils-ping",
+      "packages": "netcat-openbsd,inetutils-ping,redis-tools",
       "ppas": "ppa:deadsnakes/ppa"
     }
   },
@@ -39,20 +39,23 @@
       ],
       "settings": {
         "go.toolsManagement.autoUpdate": true,
-        "go.testFlags": ["-v", "-count=1"],
+        "go.testFlags": [
+          "-v",
+          "-count=1"
+        ],
         "go.coverOnSave": false,
         "go.coverOnSingleTest": true,
         "editor.formatOnSave": true,
         "[go]": {
-            "editor.defaultFormatter": "golang.go",
-            "editor.codeActionsOnSave": {
+          "editor.defaultFormatter": "golang.go",
+          "editor.codeActionsOnSave": {
             "source.organizeImports": "explicit"
-            }
+          }
         },
         "[go.mod]": {
-            "editor.defaultFormatter": "golang.go"
+          "editor.defaultFormatter": "golang.go"
         }
-        }
+      }
     }
   },
   "postCreateCommand": "bash .devcontainer/setup.sh"
