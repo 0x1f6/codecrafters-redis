@@ -25,6 +25,8 @@ func Parse(reader *bufio.Reader) (RESPValue, error) {
 		return parseSimpleString(reader)
 	case '-':
 		return parseSimpleError(reader)
+	case ':':
+		return parseInteger(reader)
 	default:
 		return nil, fmt.Errorf("unknown RESP type: %c", firstByte[0])
 	}

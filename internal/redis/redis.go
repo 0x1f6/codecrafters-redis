@@ -24,6 +24,7 @@ var commands = map[string]commandHandler{
 	"ECHO": (*Dispatcher).handleCmdEcho,
 	"GET":  (*Dispatcher).handleCmdGet,
 	"SET":  (*Dispatcher).handleCmdSet,
+	"RPUSH": (*Dispatcher).handleCmdRpush,
 }
 
 func errorf(format string, args ...any) resp.SimpleError {
